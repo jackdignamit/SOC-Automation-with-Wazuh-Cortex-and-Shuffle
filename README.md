@@ -1,0 +1,1 @@
+# SOC-Automation-with-Wazuh-Cortex-and-Shuffle
