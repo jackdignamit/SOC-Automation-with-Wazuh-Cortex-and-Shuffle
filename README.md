@@ -1,4 +1,4 @@
-# (WIP) SOC-Automation-with-Wazuh-Cortex-and-Shuffle (WIP) 
+# (WIP) SOC-Automation with Wazuh, Cortex, and Shuffle
 *Completed: November 1, 2025*
 
 **description**
@@ -19,7 +19,7 @@ description
 | Shuffle             | SOAR platform for automated workflows  | [https://shuffler.io/](https://shuffler.io/) |
 | Sysmon            | Endpoint telemtry for Windows  | [https://shuffler.io/](https://shuffler.io/) |
 | Mimikatz           | Open-source credential-extracting tool used to simulate malicious activity | [https://github.com/ParrotSec/mimikatz](https://github.com/ParrotSec/mimikatz) |
-| Windows 10 VM        | Endpoint environment to run Mimikatz and test Wazuh EDR detection | [https://www.vultr.com/](https://www.vultr.com/) |
+| Virtual Machines        | Endpoint environment to run Mimikatz and test Wazuh EDR detection | [https://www.vultr.com/](https://www.vultr.com/) [https://www.virtualbox.org/](https://www.virtualbox.org/) |
 
 - - -
 
@@ -45,8 +45,9 @@ For my lab, I used a [Virtualbox](https://www.virtualbox.org/) Windows 11 virtua
 
 **2.** Download a Windows 11 **.iso** file from [https://www.microsoft.com/en-us/software-download/windows11](https://www.microsoft.com/en-us/software-download/windows11).  
 
-**3.** Add the **.iso** file to Virtualbox by navigating to New at the top of the screen, adding your .iso image, setting the version to Windows 11, and using all default settings.  
-   - I recommend **8192 MB of base memory**, **2 processors**, and **80 GB** of hard disk storage space but it all depends on your setup.  
+**3.** Add the `**.iso**` file to Virtualbox by navigating to "**New**" at the top of the screen, adding your `.iso` image, setting the version to Windows 11, and using all default settings.  
+   - I recommend **8192 MB of base memory**, **2 processors**, and **80 GB** of hard disk storage space but it all depends on your setup.
+
 **4.** Startup your VM and follow the Microsoft setup. When it asks for product key, say you don't have one, and use Windows 11 Pro.  
 
 **5.** Now let's setup Sysmon which can be installed from here: [https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon)
@@ -86,13 +87,14 @@ Wazuh is an open-source security platform that provides threat detection, monito
 
 1. Secure Shell connect into the Wazuh virtual machine using its public IP address listed on the Vultr dashboard.
    - `ssh root@[Wazuh public ip]`
+
 2. To install Wazuh, download and run the Wazuh installation assistent. The latest version can be located here: [https://documentation.wazuh.com/current/quickstart.html](https://documentation.wazuh.com/current/quickstart.html)
    - This process may take a couple of minutes.
    
 <img width="1463" height="792" alt="Screenshot 2025-12-07 125015" src="https://github.com/user-attachments/assets/f4036a4c-b8ca-45d7-a817-acafd1a4af0b" />
 <img width="1481" height="176" alt="Screenshot 2025-11-01 125706" src="https://github.com/user-attachments/assets/0837eb85-bc97-4c89-9ec6-e9acae0c08e1" />
 
-3. Once Wazuh has finished installing, **copy the provided username and password** needed to access the Wazuh dashboard. I recommend writing these down in a notepad file in case you forget.
+3. Once Wazuh has finished installing, **copy the provided username and password** needed to access the Wazuh dashboard. I HIGHLY recommend writing these down in a notepad file in case you forget.
    
 4. We must first permit inbound traffic on TCP port 443 on the Wazuh server. Use the command **`ufw allow 443`** in the SSH session to enable this firewall rule.
 
@@ -104,6 +106,18 @@ Wazuh is an open-source security platform that provides threat detection, monito
 - - - 
 
 ## 4️⃣ Configure Wazuh
+On the Wazuh dashboard, we will be creating a new agent to install on our Virtualbox VM.
+
+1. Open the Wazuh dashboard on your Virtualbox VM. Deploy a new agent and configure it as a Windows agent with the Wazuh public IP address.
+
+2. Open an **administrative powershell window** and paste the commands provided by Wazuh to install the agent. Once entered, run `net start wazuhsvc` to start the Wazuh service.
+- If the agent fails to appear on the dashboard, permit its associated ports using `ufw allow 443`, `ufw allow 1514`, and `ufw allow 1515` commands **in the SSH session**.
+
+<img width="955" height="296" alt="Screenshot 2025-12-13 122231" src="https://github.com/user-attachments/assets/26abad7b-164b-425f-ae98-a55d093f6aa2" />
+
+<img width="471" height="100" alt="Screenshot 2025-11-01 135148" src="https://github.com/user-attachments/assets/b57191a5-1c0f-4946-bf46-6c0ad4422a1b" />
+
+<img width="667" height="392" alt="Screenshot 2025-11-01 135140" src="https://github.com/user-attachments/assets/8d91e711-5b58-4038-ab38-9017e7979ffb" />
 
 - - - 
 
@@ -121,7 +135,7 @@ TheHive is an open-source **Security Orchestration, Automation, and Response (SO
       - `java -version` to verify Java is installed and up to date.
 
 **Cassandra** is the **primary distributed NoSQL database** used by TheHive which stores all cases, alerts, tasks, and permissions.
-**Elasticsearch** is a **search and indexing engine** used by both Cassandra and TheHive as a search accelerator. It is thanks to its fast searching and filtering nature.
+**Elasticsearch** is a **search and indexing engine** used by both Cassandra and TheHive as a search accelerator.
 
 4. For Cassandra, we'll have to configured its default settings. Navigate to its configuration file using **`nano /etc/cassandra/cassandra.yaml`** and changing the following values:
   ```
@@ -137,11 +151,13 @@ TheHive is an open-source **Security Orchestration, Automation, and Response (SO
 <img width="1047" height="264" alt="Screenshot 2025-12-07 165202" src="https://github.com/user-attachments/assets/446bd4db-fd22-4768-a969-df8d15cc546b" />
 
 6. For Elasticsearch, we'll have to configured its default settings. Navigate to its configuration file using **`nano /etc/elasticsearch/elasticsearch.yml`** and changing the following values:
-```cluster_name: {VM name}```
-```node.name: node-1```
-```network.host: [THEHIVE PUBLIC IP ADDRESS]```
-```http.port: 9200```
-```cluster.initial_master_nodes: ["node-1"]```
+```
+cluster_name: {VM name}
+node.name: node-1
+network.host: [THEHIVE PUBLIC IP ADDRESS]
+http.port: 9200
+cluster.initial_master_nodes: ["node-1"]
+```
    
 *Save the configurations by using CTRL+X, Y, and then enter key.*
 
@@ -171,6 +187,13 @@ TheHive is an open-source **Security Orchestration, Automation, and Response (SO
 10. Restart TheHive and enable it using **`systemctl start thehive`** and **`systemctl enable thehive`**.
 
 <img width="1149" height="269" alt="Screenshot 2025-12-07 171748" src="https://github.com/user-attachments/assets/770e933f-c158-44da-8c36-2a9acc8c811d" />
+
+11. Once TheHive is properly installed and running, you can navigate to its dashboard by using the public IP address you configured it with. "`http://YOUR_SERVER_ADDRESS:9000/`"
+    **The default admin credentials are:**
+    - Username: `admin@thehive.local`
+    - Password: `secret`
+
+If you cannot connect to the server, permit its port using **`ufw allow 9000`**.
 
 - - - 
 
