@@ -1,4 +1,4 @@
-# (WIP) SOC-Automation with Wazuh, Cortex, and Shuffle
+# (WIP) SOC Automation with Wazuh, Cortex, and Shuffle
 *Completed: November 1, 2025*
 
 **description**
