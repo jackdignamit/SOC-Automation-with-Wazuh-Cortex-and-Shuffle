@@ -57,7 +57,7 @@ For my lab, I used a [Virtualbox](https://www.virtualbox.org/) Windows 11 virtua
 **6.** From there, we will need a config to tell Sysmon what to ignore and what to log. Let's use **sysmonconfig.xml** from here: [https://raw.githubusercontent.com/olafhartong/sysmon-modular/refs/heads/master/sysmonconfig.xml](https://raw.githubusercontent.com/olafhartong/sysmon-modular/refs/heads/master/sysmonconfig.xml)
    - I saved it in my downloaded Sysmon directory.
   
-**7.** In an **Administrative PowerShell** window, use ```cd``` to change directories to your Sysmon folder. Its likely located in your `downloads` folder. Then, run it using `\.Sysmon64.exe -i sysmonconfig.xml`.
+**7.** In an **Administrative PowerShell** window, use ```cd``` to change directories to your Sysmon folder. It should be located in your **downloads** folder. Then, run it using `\.Sysmon64.exe -i sysmonconfig.xml`.
 
 **You now have a functional VirtualBox virtual machine with Sysmon installed!**  
 I recommend taking a snapshot of your virtual machine in this state so you can revert back to it if need be.
@@ -197,15 +197,38 @@ If you cannot connect to the server, permit its port using **`ufw allow 9000`**.
 
 - - - 
 
-## 6️⃣ Install Mimikatz on your Virtualbox VM
+## 6️⃣ Configure ossec.conf configuration file
+When the Wazuh agent was installed earlier, it installed an OSSEC-agent directory in your VM's `Program Files (x86)` folder.
+OSSEC agent is a hosted-based intrusion detection system (HIDS) component that runs on endpoints (such as your VM) to monitor and protect that host.
+
+1. Navigate to your `Program Files (x86)\ossec-agent` directory and open the **ossec.conf** file in notepad.
+
+2. Scroll down to the log analysis section and delete the following eventchannel exclusion section:
+
+<img width="639" height="238" alt="Screenshot 2025-12-13 124229" src="https://github.com/user-attachments/assets/82ae42e2-2ebc-4410-9da0-cf8c1505e48f" />
+
+3. Change the application location to **`Microsoft-Windows-Sysmon/Operational/location`** and save.
+
+<img width="618" height="568" alt="Screenshot 2025-11-01 135615" src="https://github.com/user-attachments/assets/1202b2f6-8f97-45ff-8442-4e671167a7de" />
+
+4. Restart the Wazuh agent service.
 
 - - - 
 
-## 7️⃣ Create a custom detection rule on Wazuh
+## 7️⃣ 
 
 - - - 
 
-## 8️⃣ Create a SOAR Playbook using Shuffle
+## 8️⃣ Install Mimikatz on your Virtualbox VM
+
+- - -
+
+
+## 9️⃣ Create a custom detection rule on Wazuh
+
+- - -
+
+## 1️⃣0️⃣ Create a SOAR Playbook using Shuffle
 
 - - -
 
