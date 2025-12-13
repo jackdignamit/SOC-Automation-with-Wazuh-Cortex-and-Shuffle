@@ -12,14 +12,16 @@ All implementation, exploration, and documentation performed independently as pa
 description
 
 ## Tech Stack
-| Tool & Technology | Purpose | Links |
+| Tools & Technology | Purpose | Links |
 |------------------|-----------------|-----------------|
 | Wazuh       | SIEM/EDR platform for log collection, monitoring, and alerting | [https://wazuh.com/](https://wazuh.com/) |
 | TheHive             | Incident response platform for case tracking | [https://strangebee.com/thehive/](https://strangebee.com/thehive/) |
 | Shuffle             | SOAR platform for automated workflows  | [https://shuffler.io/](https://shuffler.io/) |
-| Sysmon            | Endpoint telemtry for Windows  | [https://shuffler.io/](https://shuffler.io/) |
+| Sysmon            | Endpoint telemtry for Windows  | [https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon](https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon) |
 | Mimikatz           | Open-source credential-extracting tool used to simulate malicious activity | [https://github.com/gentilkiwi/mimikatz](https://github.com/gentilkiwi/mimikatz) |
-| Virtual Machines        | Endpoint environment to run Mimikatz and test Wazuh EDR detection | [https://www.vultr.com/](https://www.vultr.com/) [https://www.virtualbox.org/](https://www.virtualbox.org/) |
+| MITRE ATT&CK            | Knowledge base of adversary tactics, techniques, and procedures (TTP)  | [https://attack.mitre.org/](https://attack.mitre.org/) |
+| VirusTotal            | Malware analysis and file reputation checker  | [https://www.virustotal.com/gui/](https://www.virustotal.com/gui/) |
+| Virtual Machines        | Endpoint environment to run Mimikatz and test Wazuh EDR detection | [https://www.vultr.com/](https://www.vultr.com/) & [https://www.virtualbox.org/](https://www.virtualbox.org/) |
 
 - - -
 
@@ -217,11 +219,17 @@ OSSEC agent is a host-based intrusion detection system (HIDS) component that run
 
 We configured the Wazuh service on the Virtualbox VM, now we must do the same for the VM hosting our Wazuh dashboard using its SSH session. 
 
-5. Use the command `nano /var/ossec/etc/ossec` to open the **ossec.conf** file on the Wazuh VM. Change the <logall> and <logall_json> values from `no` to `yes`.
+5. Use the command `nano /var/ossec/etc/ossec` to open the **ossec.conf** file on the Wazuh VM. Change the `<logall>` and `<logall_json>` values from no to yes.
 
 *Save the configurations by using CTRL+X, Y, and then enter key.*
 
 <img width="905" height="626" alt="Screenshot 2025-11-01 140951" src="https://github.com/user-attachments/assets/58094ac6-80ed-4c13-93dc-121338480859" />
+
+6. Let's do the same for **filebeat.yml**. Use the command `nano /etc/filebeat/filebeat.yml` and change the "archives" enabled value from false to true under `filebeat.modules`.
+
+<img width="320" height="183" alt="Screenshot 2025-12-13 141136" src="https://github.com/user-attachments/assets/ba95c332-e929-4d67-8b24-33184e0dec67" />
+
+*Save the configurations by using CTRL+X, Y, and then enter key.*
 
 Now, all detections and events will be logged.
 
@@ -240,18 +248,59 @@ It is a form of malware, but since we are using a VM with nothing personable on 
 
 4. If we search for 'Mimikatz' on the Wazuh dashboard, we should be able to see its execution history.
 
+<img width="2474" height="802" alt="Screenshot 2025-11-01 141533" src="https://github.com/user-attachments/assets/3ef3d2ac-160b-4b58-964c-6d7155179e62" />
+
 - - - 
 
-## 8️⃣ 
+## 8️⃣ Create a custom detection rule on Wazuh
+Custom rules ensure that alerts are triggered only for relevant, high-value events, such as a Mimikatz execution. This helps reduce noise and false positives, enabling more accurate and timely automated response actions.
+
+1. On the Wazuh dashboard, under the server management tab, click on "rules" and then the custom rules button in the top right.
+
+2. Edit the **local_rules.xml** file and copy the formatting of the rule with an ID of 100001. Use it as a template to create your own Mimikatz detection rule like such:
+
+<img width="1110" height="806" alt="Screenshot 2025-11-01 142721" src="https://github.com/user-attachments/assets/fc132d95-4d0d-48f3-9f16-8f470935b0f2" />
+
+This rule searches for original file names of "mimikatz.exe" under `sysmon_event1`, aka process creations. If found, it triggers the rule and labels it with a description, a level of 15 (the highest), and a [MITRE ATT&CK](https://attack.mitre.org/) framework ID of T1003.
+
+<img width="2367" height="885" alt="Screenshot 2025-12-13 150029" src="https://github.com/user-attachments/assets/b831a66f-476d-482f-970c-f5f6b2667acd" />
+
+If you save and then rerun Mimikatz, it should immediately detect the file execution.
+
+<img width="2479" height="796" alt="Screenshot 2025-11-01 151417" src="https://github.com/user-attachments/assets/4b509552-bd80-412d-aacf-9df541d954ef" />
+
+<img width="622" height="488" alt="Screenshot 2025-11-01 151522" src="https://github.com/user-attachments/assets/ef7c0e8e-b484-4222-b46b-b9aeacc76a1a" />
 
 - - -
 
+## 9️⃣ Create a SOAR Playbook using Shuffle
+Shuffle is an open-source security orchestration, automation, and response (SOAR) platform used to help SOC teams automate and coordinate incident responses and manage everyday security tasks. We will utilize it receive alerts from our Wazuh manager, inform analysts and stakeholders, and perform responsive actions.
 
-## 9️⃣ Create a custom detection rule on Wazuh
+1. To start, create a [Shuffle](https://shuffler.io/) account. Then, create a new workflow.
 
-- - -
+2.  Add a webhook to the workflow and copy its webhook URI. Then update the Wazuh Manager's `ossec.conf` file in the SSH session by using the `nano /var/ossec/etc/ossec.conf` command.
+    Insert the following code between the <global> and <alerts> section:
+      
+    ```
+    <integration>
+       <name>shuffle</name>
+       <hook_url>YOUR_WEBHOOK_URI>
+       <rule_id>100002</rule_id>
+       <alert_format>json</alert_format>
+    </integration>
+    ```
+    
+    <img width="1605" height="736" alt="image" src="https://github.com/user-attachments/assets/f16aec99-dbba-448f-ad35-8caf1d74a0ec" />
 
-## 1️⃣0️⃣ Create a SOAR Playbook using Shuffle
+   *(Replace the "**YOUR_WEBHOOK_URI**" text with the URI you copied from Shuffle earlier.)*
+   *Save the configurations by using CTRL+X, Y, and then enter key.*
+
+3. Start the Webhook and rerun Mimikatz. This should trigger another alert in Wazuh which will be funneled into Shuffle.
+
+  <img width="581" height="280" alt="Screenshot 2025-11-01 151611" src="https://github.com/user-attachments/assets/6b257ed9-9ef6-4bd1-aac4-afcf97de4d57" />
+  <img width="580" height="837" alt="Screenshot 2025-11-01 151618" src="https://github.com/user-attachments/assets/a2a2fdab-a026-465f-b0fb-9817061fba8a" />
+
+4. Now that the webhook is setup, let's have it extract a SHA256 hash and run it through VirusTotal.
 
 - - -
 
