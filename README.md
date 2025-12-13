@@ -11,6 +11,8 @@ All implementation, exploration, and documentation performed independently as pa
 # Project Overview
 description
 
+<img width="1228" height="530" alt="Screenshot 2025-11-01 162511" src="https://github.com/user-attachments/assets/dd1c6b16-713b-45cc-83fc-2562a0ef6193" />
+
 ## Tech Stack
 | Tools & Technology | Purpose | Links |
 |------------------|-----------------|-----------------|
@@ -300,7 +302,21 @@ Shuffle is an open-source security orchestration, automation, and response (SOAR
   <img width="581" height="280" alt="Screenshot 2025-11-01 151611" src="https://github.com/user-attachments/assets/6b257ed9-9ef6-4bd1-aac4-afcf97de4d57" />
   <img width="580" height="837" alt="Screenshot 2025-11-01 151618" src="https://github.com/user-attachments/assets/a2a2fdab-a026-465f-b0fb-9817061fba8a" />
 
-4. Now that the webhook is setup, let's have it extract a SHA256 hash and run it through VirusTotal.
+Now that the webhook is setup, let's have it extract a SHA256 hash and run it through VirusTotal. 
+
+4. Drag the "Shuffle Tools" app to the playbook and set the "**Find actions**" field to **Regex capture group** with the regex being `SHA256=([0-9A-Fa-f]{64})`. Lastly, set **hashes** as the input data. 
+
+<img width="392" height="493" alt="Screenshot 2025-11-01 152049" src="https://github.com/user-attachments/assets/0a6db843-971c-472b-9fc1-2e735c338bb4" />
+
+5. Add a [VirusTotal](https://www.virustotal.com/gui/) app, create an account, and set your API key to authenticate the app. Configure VirusTotal to use only the list from the SHA-256 Hash app.
+   
+<img width="1179" height="492" alt="Screenshot 2025-11-01 152642" src="https://github.com/user-attachments/assets/c5a9a658-113c-4c2e-9084-1de97fd83277" />
+<img width="412" height="1000" alt="Screenshot 2025-11-01 153421" src="https://github.com/user-attachments/assets/107e473e-1030-470b-ad8f-050f1f3d0813" />
+
+If you rerun Mimikatz, the alert should be funneled into the webhook and into Virustotal and the SHA256 Hasher.
+
+<img width="582" height="436" alt="Screenshot 2025-11-01 152756" src="https://github.com/user-attachments/assets/b8bb3bb0-896b-4a03-a2c3-89e7b46f055a" />
+<img width="560" height="1027" alt="Screenshot 2025-11-01 153438" src="https://github.com/user-attachments/assets/7a9477d9-d374-4294-989a-7bf12cac64df" />
 
 - - -
 
