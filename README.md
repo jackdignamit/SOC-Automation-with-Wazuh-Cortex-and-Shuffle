@@ -122,7 +122,7 @@ On the Wazuh dashboard, we will be creating a new agent to install on our Virtua
 1. Open the Wazuh dashboard on your Virtualbox VM. Deploy a new agent and configure it as a Windows agent with the Wazuh public IP address.
 
 2. Open an **administrative PowerShell window** and paste the commands provided by Wazuh to install the agent. Once entered, run `net start wazuhsvc` to start the Wazuh service.
-- If the agent fails to appear on the dashboard, permit its associated ports using `ufw allow 443`, `ufw allow 1514`, and `ufw allow 1515` commands **in the SSH session**.
+   - If the agent fails to appear on the dashboard, permit its associated ports using `ufw allow 443`, `ufw allow 1514`, and `ufw allow 1515` commands **in the SSH session**.
 
 <img width="955" height="296" alt="Screenshot 2025-12-13 122231" src="https://github.com/user-attachments/assets/26abad7b-164b-425f-ae98-a55d093f6aa2" />
 
