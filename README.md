@@ -1,7 +1,8 @@
 # (WIP) SOC Automation with Wazuh, TheHive, and Shuffle
 *Completed: November 1, 2025*
 
-**This project demonstrates a full security operations center (SOC) automation workflow using Wazuh, TheHive, and Shuffle for security orchestration, automation, and response (SOAR).**
+**This project demonstrates a fully integrated security operations center (SOC) automation workflow using Wazuh, TheHive, and Shuffle for *security orchestration, automation, and response* (SOAR). 
+The goal was to build an end‑to‑end incident response pipeline that detects suspicious activity, performs automated triage, provides event data, and inform analysts.**
 
 Tutorial by [MyDFIR](https://www.youtube.com/@MyDFIR).  
 All implementation, exploration, and documentation performed independently as part of my cybersecurity learning journey.
@@ -9,7 +10,7 @@ All implementation, exploration, and documentation performed independently as pa
 - - - 
 
 # Project Overview
-description
+In this project, I created a **modern, fully automated SOC workflow** that is designed to eliminate **human error** and **tedious tasks** in security operations. By utilizing open-source tools like **Wazuh (SIEM)**, **Shuffle (SOAR)**, and **TheHive (incident response and case management)**, my system detects threats, analyzes them, and informs analysts via emails without any human intervention. **Vultr** virtual machines are utilized to host these tools and create a vulnerable endpoint with credential-stealing malware **(Mimikatz)** that flags alerts in Wazuh. Wazuh's *detection and response* (D&R) rules are flagged and triggers the automated workflow in Shuffle via a webhook. The data is then enriched with threat intelligence using **VirusTotal**, a **SHA256 hash** is captured, emails are sent, and lastly creates a structured incident in TheHive for SOC analysts to investigate.
 
 <img width="1228" height="530" alt="Screenshot 2025-11-01 162511" src="https://github.com/user-attachments/assets/dd1c6b16-713b-45cc-83fc-2562a0ef6193" />
 
